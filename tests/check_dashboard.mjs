@@ -4,7 +4,11 @@ import path from 'node:path';
 
 const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
-const archive = fs.readFileSync(path.join(root, 'seat-cushion-brief/2026/0810.html'), 'utf8');
+const updated = html.match(/Updated ([A-Z][a-z]+ \d{1,2}, \d{4})/);
+if (!updated) throw new Error('Updated date marker missing');
+const runDate = new Date(updated[1] + ' 12:00:00 UTC');
+const archiveRel = `seat-cushion-brief/${runDate.getUTCFullYear()}/${String(runDate.getUTCMonth()+1).padStart(2,'0')}${String(runDate.getUTCDate()).padStart(2,'0')}.html`;
+const archive = fs.readFileSync(path.join(root, archiveRel), 'utf8');
 const match = html.match(/const D=window\.__D=(\[.*?\]);window\.__RISING_SINCE="([^"]+)"/s);
 if (!match) throw new Error('Dashboard data markers missing');
 const rows = JSON.parse(match[1]);
